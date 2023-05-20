@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Table } from 'react-bootstrap';
-import { Box, Fab, Modal, TextField } from '@mui/material';
+import { Box, Fab, Modal, TextField, LinearProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -52,40 +52,56 @@ const styleMessage = {
     borderRadius: "60px",
 };
 
-const StudentTab = () => {
-    const [loading, setLoading] = React.useState(false);
+const StudentTab = ({ parentCallback }) => {
     const [users, setUsers] = useState([]);
     const [open, setOpen] = React.useState(false);
     const [openMessage, setOpenMessage] = React.useState(false);
     const [data, setData] = React.useState(student);
     const [msg, setMsg] = React.useState();
-    
-    console.log("Loding",loading);
+    const [loading, setLoading] = useState(false);
+
 
     const loadUsers = async () => {
-        const result = await axios.get("http://localhost:8080/getStudent");
+        const result = await axios.get("https://picayune-cover-production.up.railway.app/getStudent");
         setUsers(result.data);
     }
 
     const saveStudent = async () => {
-        await axios.post("http://localhost:8080/addStudent", data)
-            .then(setLoading(false))
-            .then(handleClose)
-            .then(handleOpenMessage)
+        setLoading(true);
+        parentCallback(true);
+        await axios.post("https://picayune-cover-production.up.railway.app/addStudent", data)
             .then(setMsg(data.id ? "Student Updated!" : "Student Added!"))
-            .then(setData(student));
+        setTimeout(() => {
+            setLoading(false);
+            parentCallback(false);
+            handleClose();
+            setData(student);
+            handleOpenMessage();
+        }, 3000);
+
     }
 
     const editStudent = async (id) => {
-        console.log("edit", id);
-        const studentData = await axios.get(`http://localhost:8080/getStudentById/${id}`)
+        setLoading(true);
+        parentCallback(true);
+        setTimeout(() => {
+            setLoading(false);
+            parentCallback(false);
+            setOpen(true);
+        }, 3000);
+        const studentData = await axios.get(`https://picayune-cover-production.up.railway.app/getStudentById/${id}`)
         setData(studentData.data);
-        setOpen(true);
     }
 
     const deleteStudent = async (id) => {
-        await axios.delete(`http://localhost:8080/deleteStudent/${id}`)
-            .then(handleOpenMessage)
+        setLoading(true);
+        parentCallback(true);
+        setTimeout(() => {
+            setLoading(false);
+            parentCallback(false);
+            handleOpenMessage();
+        }, 3000);
+        await axios.delete(`https://picayune-cover-production.up.railway.app/deleteStudent/${id}`)
             .then(setMsg("Student Deleted!"));
         loadUsers();
     }
@@ -98,10 +114,21 @@ const StudentTab = () => {
             [name]: value
         });
     }
-    console.log(data);
 
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
+    const handleOpen = () => {
+        setLoading(true);
+        parentCallback(true);
+        setTimeout(() => {
+            setLoading(false);
+            parentCallback(false);
+            setOpen(true);
+        }, 1000);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+        setData(student);
+    }
 
     const handleOpenMessage = () => setOpenMessage(true);
     const handleCloseMessage = () => setOpenMessage(false);
@@ -112,6 +139,7 @@ const StudentTab = () => {
 
     return (
         <>
+
             <div className="container" style={{ height: "450px" }}>
                 <h4>Students Data</h4>
                 <div className="py-2 table-container">
@@ -168,7 +196,7 @@ const StudentTab = () => {
                         <LoadingButton
                             className="button"
                             color="secondary"
-                            onClick={()=>{setLoading(true);saveStudent()}}
+                            onClick={saveStudent}
                             loading={loading}
                             loadingPosition="start"
                             startIcon={<SaveIcon />}

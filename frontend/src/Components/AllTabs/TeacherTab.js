@@ -52,7 +52,7 @@ const styleMessage = {
     borderRadius: "60px",
 };
 
-const TeacherTab = () => {
+const TeacherTab = ({ parentCallback }) => {
     const [loading, setLoading] = React.useState(false);
     const [users, setUsers] = useState([]);
     const [open, setOpen] = React.useState(false);
@@ -62,30 +62,45 @@ const TeacherTab = () => {
 
 
     const loadUsers = async () => {
-        const result = await axios.get("http://localhost:8080/getTeacher");
+        const result = await axios.get("https://picayune-cover-production.up.railway.app/getTeacher");
         setUsers(result.data);
     }
 
     const saveTeacher = async () => {
         setLoading(true);
-        await axios.post("http://localhost:8080/addTeacher", data)
-            .then(setLoading(false))
-            .then(handleClose)
-            .then(handleOpenMessage)
+        parentCallback(true);
+        await axios.post("https://picayune-cover-production.up.railway.app/addTeacher", data)
             .then(setMsg(data.id ? "Teacher Updated!" : "Teacher Added!"))
-            .then(setData(teacher));
+        setTimeout(() => {
+            setLoading(false);
+            parentCallback(false);
+            handleClose();
+            setData(teacher);
+            handleOpenMessage();
+        }, 3000);
     }
 
     const editTeacher = async (id) => {
-        console.log("edit", id);
-        const teacherData = await axios.get(`http://localhost:8080/getTeacherById/${id}`)
+        setLoading(true);
+        parentCallback(true);
+        setTimeout(() => {
+            setLoading(false);
+            parentCallback(false);
+            setOpen(true);
+        }, 3000);
+        const teacherData = await axios.get(`https://picayune-cover-production.up.railway.app/getTeacherById/${id}`)
         setData(teacherData.data);
-        setOpen(true);
     }
 
     const deleteTeacher = async (id) => {
-        await axios.delete(`http://localhost:8080/deleteTeacher/${id}`)
-            .then(handleOpenMessage)
+        setLoading(true);
+        parentCallback(true);
+        setTimeout(() => {
+            setLoading(false);
+            parentCallback(false);
+            handleOpenMessage();
+        }, 3000);
+        await axios.delete(`https://picayune-cover-production.up.railway.app/deleteTeacher/${id}`)
             .then(setMsg("Teacher Deleted!"));
         loadUsers();
     }
@@ -98,10 +113,20 @@ const TeacherTab = () => {
             [name]: value
         });
     }
-    console.log(data);
 
-    const handleOpen = () => setOpen(true);
-    const handleClose = () => setOpen(false);
+    const handleOpen = () => {
+        setLoading(true);
+        parentCallback(true);
+        setTimeout(() => {
+            setLoading(false);
+            parentCallback(false);
+            setOpen(true);
+        }, 1000);
+    };
+    const handleClose = () => {
+        setOpen(false);
+        setData(teacher);
+    }
 
     const handleOpenMessage = () => setOpenMessage(true);
     const handleCloseMessage = () => setOpenMessage(false);
