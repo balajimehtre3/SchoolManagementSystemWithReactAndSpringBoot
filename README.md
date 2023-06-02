@@ -1,6 +1,8 @@
 # SchoolManagementSystemWithReactAndSpringBoot
 This repository contains a School Management System implemented using React and Spring Boot
 
+# Live ``` https://schoolmanagementsystemrj.netlify.app ```
+
 ## Technologies Used
 + React: A JavaScript library used for building user interfaces, providing an interactive and responsive frontend experience.
 
